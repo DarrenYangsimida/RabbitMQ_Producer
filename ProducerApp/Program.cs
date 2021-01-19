@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProducerApp.AppUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +20,14 @@ namespace ProducerApp
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Producer());
+
+            //“¿¿µ◊¢»Î
+            var services = new ServiceCollection();
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+
+            var redisHelper = new RedisHelper();
+
+            Application.Run(new Producer(redisHelper));
         }
     }
 }

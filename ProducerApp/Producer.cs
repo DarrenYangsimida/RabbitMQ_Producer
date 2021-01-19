@@ -1,4 +1,7 @@
-﻿using RabbitMQ.Client;
+﻿using Newtonsoft.Json;
+using ProducerApp.AppUtils;
+using ProducerApp.Models;
+using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,73 +16,31 @@ namespace ProducerApp
 {
     public partial class Producer : Form
     {
-        private ConnectionFactory factory;
-        private IConnection connection;
-        private IModel channel;
-        private IBasicProperties properties;
+        private ConnectionFactory _factory;
+        private IConnection _connection;
+        private IModel _channel;
+        private IBasicProperties _properties;
+        private readonly RedisHelper _redisHelper;
 
-        public Producer()
+        public Producer(RedisHelper redisHelper)
         {
             InitializeComponent();
+            _redisHelper = redisHelper;
             button1.Enabled = true;
             button2.Enabled = false;
             button3.Enabled = false;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        ~Producer()
         {
-            try
-            {
-                factory = new ConnectionFactory()
-                {
-                    HostName = "localhost",//本地 rabbitmq 服务
-                    UserName = "guest",
-                    Password = "guest"
-                };
-                connection = factory.CreateConnection();
-                channel = connection.CreateModel();
-                channel.ExchangeDeclare(exchange: "SourceExchange", type: ExchangeType.Topic, durable: true, autoDelete: true, arguments: null);
-                channel.QueueDeclare(queue: "testQueue", durable: true, exclusive: false, autoDelete: true, arguments: null);
-                channel.QueueBind(queue: "testQueue", exchange: "SourceExchange", routingKey: "*.msg", arguments: null);
-                properties = channel.CreateBasicProperties();
-                properties.DeliveryMode = 2;
-
-                button1.Enabled = false;
-                button2.Enabled = true;
-                button3.Enabled = true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"开启 MQ 服务失败，请重试！Error Message：{ex.Message}");
-                CloseMQConnection();
-            }
-
+            _redisHelper.Dispose();
         }
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            CloseMQConnection();
-        }
-
-        public void CloseMQConnection()
-        {
-            try
-            {
-                channel.ExchangeDelete("SourceExchange");
-                channel.QueueDelete("testQueue");
-                channel.Close();
-                connection.Close();
-                connection.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _ = ex.Message;
-            }
-            button1.Enabled = true;
-            button2.Enabled = false;
-            button3.Enabled = false;
-        }
-
+        /// <summary>
+        /// 向 Rabbit MQ Server 发送消息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button2_Click(object sender, EventArgs e)
         {
             try
@@ -88,7 +49,7 @@ namespace ProducerApp
                 if (!string.IsNullOrWhiteSpace(msg))
                 {
                     var body = Encoding.UTF8.GetBytes(msg);
-                    channel.BasicPublish(exchange: "SourceExchange", routingKey: $"{Guid.NewGuid()}.msg", basicProperties: properties, body: body);
+                    _channel.BasicPublish(exchange: "SourceExchange", routingKey: $"{Guid.NewGuid()}.msg", basicProperties: _properties, body: body);
                     MessageBox.Show("消息发送成功");
                     richTextBox1.Text = "";
                 }
@@ -103,5 +64,156 @@ namespace ProducerApp
             }
         }
 
+        /// <summary>
+        /// 开启 Rabbit MQ 服务连接
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _factory = new ConnectionFactory()
+                {
+                    HostName = "localhost",//本地 rabbitmq 服务
+                    UserName = "guest",
+                    Password = "guest"
+                };
+                _connection = _factory.CreateConnection();
+                _channel = _connection.CreateModel();
+                _channel.ExchangeDeclare(exchange: "SourceExchange", type: ExchangeType.Topic, durable: true, autoDelete: true, arguments: null);
+                _channel.QueueDeclare(queue: "testQueue", durable: true, exclusive: false, autoDelete: true, arguments: null);
+                _channel.QueueBind(queue: "testQueue", exchange: "SourceExchange", routingKey: "*.msg", arguments: null);
+                _properties = _channel.CreateBasicProperties();
+                _properties.DeliveryMode = 2;
+
+                button1.Enabled = false;
+                button2.Enabled = true;
+                button3.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"开启 MQ 服务失败，请重试！Error Message：{ex.Message}");
+                CloseMQConnection();
+            }
+
+        }
+
+        /// <summary>
+        /// 关闭 Rabbit MQ 服务连接
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button3_Click(object sender, EventArgs e)
+        {
+            CloseMQConnection();
+        }
+
+        /// <summary>
+        /// 关闭 Rabbit MQ 服务连接
+        /// </summary>
+        public void CloseMQConnection()
+        {
+            try
+            {
+                _channel.ExchangeDelete("SourceExchange");
+                _channel.QueueDelete("testQueue");
+                _channel.Close();
+                _connection.Close();
+                _connection.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _ = ex.Message;
+            }
+            button1.Enabled = true;
+            button2.Enabled = false;
+            button3.Enabled = false;
+        }
+
+        /// <summary>
+        /// 添加数据到 ListBox 列表
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBox1.Text.Trim()) || string.IsNullOrWhiteSpace(textBox2.Text.Trim()))
+            {
+                MessageBox.Show("Login Name 和 Login Email 均不能为空，请重试");
+            }
+            else
+            {
+                listBox2.Items.Add($"{ listBox2.Items.Count + 1}、LoginName: {textBox1.Text.Trim()}, LoginEmail: {textBox2.Text.Trim()}");
+                textBox1.Text = textBox2.Text = "";
+            }
+        }
+
+        /// <summary>
+        /// 写入 Redis
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button5_Click(object sender, EventArgs e)
+        {
+            var str1 = "LoginName:";
+            var str2 = ", LoginEmail:";
+            List<string> data = new List<string>();
+            foreach (var item in listBox2.Items)
+            {
+                var itemStr = item.ToString();
+                if (!string.IsNullOrWhiteSpace(itemStr))
+                {
+                    var model = new UserModel
+                    {
+                        LoginName = itemStr.Substring(itemStr.IndexOf(str1) + str1.Length,
+                                                      itemStr.IndexOf(str2) - itemStr.IndexOf(str1) - str1.Length).Trim(),
+                        LoginEmail = itemStr[(itemStr.IndexOf(str2) + str2.Length)..].Trim()
+                    };
+                    data.Add(JsonConvert.SerializeObject(model));
+                }
+            }
+            _redisHelper.SetListValue("UserList", data);
+            listBox2.Items.Clear();
+            LoadRedisData();
+        }
+
+        /// <summary>
+        /// 读取 Redis 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button4_Click(object sender, EventArgs e)
+        {
+            LoadRedisData();
+        }
+
+        private void Producer_Load(object sender, EventArgs e)
+        {
+            LoadRedisData();
+        }
+
+        private void LoadRedisData()
+        {
+            listBox1.Items.Clear();
+
+            var userOid = _redisHelper.GetValue("UserOid");
+            if (!string.IsNullOrWhiteSpace(userOid))
+            {
+                listBox1.Items.Add($"{ listBox1.Items.Count + 1}、UserOid: {userOid}");
+            }
+
+            var user = _redisHelper.GetModelByIndex<UserModel>("UserList", new Random().Next());
+            if (user != null && !string.IsNullOrWhiteSpace(user.LoginName))
+            {
+                listBox1.Items.Add($"{ listBox1.Items.Count + 1}、LoginName: {user.LoginName}, LoginEmail: {user.LoginEmail}");
+            }
+
+            var userList = _redisHelper.GetList<UserModel>("UserList", 0, int.MaxValue);
+            userList.ForEach(item =>
+            {
+                listBox1.Items.Add($"{ listBox1.Items.Count + 1}、LoginName: {item.LoginName}, LoginEmail: {item.LoginEmail}");
+            });
+        }
     }
 }
