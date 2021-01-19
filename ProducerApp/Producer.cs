@@ -2,6 +2,7 @@
 using ProducerApp.AppUtils;
 using ProducerApp.Models;
 using RabbitMQ.Client;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -35,6 +36,18 @@ namespace ProducerApp
         {
             _redisHelper.Dispose();
         }
+
+        /// <summary>
+        /// 窗体初始加载
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Producer_Load(object sender, EventArgs e)
+        {
+            LoadRedisData();
+        }
+
+        #region Rabbit MQ 操作
 
         /// <summary>
         /// 向 Rabbit MQ Server 发送消息
@@ -131,6 +144,10 @@ namespace ProducerApp
             button3.Enabled = false;
         }
 
+        #endregion
+
+        #region Redis 操作
+
         /// <summary>
         /// 添加数据到 ListBox 列表
         /// </summary>
@@ -158,7 +175,7 @@ namespace ProducerApp
         {
             var str1 = "LoginName:";
             var str2 = ", LoginEmail:";
-            List<string> data = new List<string>();
+            List<RedisValue> data = new List<RedisValue>();
             foreach (var item in listBox2.Items)
             {
                 var itemStr = item.ToString();
@@ -173,9 +190,17 @@ namespace ProducerApp
                     data.Add(JsonConvert.SerializeObject(model));
                 }
             }
-            _redisHelper.SetListValue("UserList", data);
-            listBox2.Items.Clear();
-            LoadRedisData();
+            if (data.Count > 0)
+            {
+                _redisHelper.SetListValue("UserList", data.ToArray());
+                listBox2.Items.Clear();
+                LoadRedisData();
+                MessageBox.Show("写入成功");
+            }
+            else
+            {
+                MessageBox.Show("请输入需要写入的内容");
+            }
         }
 
         /// <summary>
@@ -188,11 +213,9 @@ namespace ProducerApp
             LoadRedisData();
         }
 
-        private void Producer_Load(object sender, EventArgs e)
-        {
-            LoadRedisData();
-        }
-
+        /// <summary>
+        /// 加载 Redis 数据
+        /// </summary>
         private void LoadRedisData()
         {
             listBox1.Items.Clear();
@@ -215,5 +238,8 @@ namespace ProducerApp
                 listBox1.Items.Add($"{ listBox1.Items.Count + 1}、LoginName: {item.LoginName}, LoginEmail: {item.LoginEmail}");
             });
         }
+
+        #endregion
+
     }
 }

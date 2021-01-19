@@ -45,6 +45,7 @@ namespace ProducerApp
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.button6 = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button1
@@ -152,14 +153,14 @@ namespace ProducerApp
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(142, 250);
+            this.textBox1.Location = new System.Drawing.Point(142, 240);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(667, 30);
             this.textBox1.TabIndex = 13;
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(142, 297);
+            this.textBox2.Location = new System.Drawing.Point(142, 276);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(667, 30);
             this.textBox2.TabIndex = 14;
@@ -167,7 +168,7 @@ namespace ProducerApp
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 253);
+            this.label4.Location = new System.Drawing.Point(12, 243);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(124, 24);
             this.label4.TabIndex = 15;
@@ -176,7 +177,7 @@ namespace ProducerApp
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(17, 300);
+            this.label5.Location = new System.Drawing.Point(17, 279);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(119, 24);
             this.label5.TabIndex = 16;
@@ -184,7 +185,7 @@ namespace ProducerApp
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(835, 250);
+            this.button6.Location = new System.Drawing.Point(835, 240);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(154, 34);
             this.button6.TabIndex = 17;
@@ -192,11 +193,21 @@ namespace ProducerApp
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(12, 323);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(100, 24);
+            this.label6.TabIndex = 18;
+            this.label6.Text = "待写入内容";
+            // 
             // Producer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1016, 675);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
@@ -254,6 +265,7 @@ namespace ProducerApp
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Label label6;
     }
 }
 

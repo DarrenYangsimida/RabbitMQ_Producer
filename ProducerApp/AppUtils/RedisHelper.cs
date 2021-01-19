@@ -9,12 +9,27 @@ namespace ProducerApp.AppUtils
     public class RedisHelper
     {
         private readonly ConnectionMultiplexer Redis;
-        private readonly IDatabase DB;
+        private readonly List<IDatabase> DBS;
 
-        public RedisHelper()
+        /// <summary>
+        /// Redis 连接初始化
+        /// </summary>
+        /// <param name="dbCount">需要连接的 Redis DB 总数</param>
+        public RedisHelper(int dbCount = 1)
         {
             Redis = ConnectionMultiplexer.Connect("localhost:6379");
-            DB = Redis.GetDatabase(1);
+            DBS = new List<IDatabase>();
+            if (dbCount > 1)
+            {
+                for (int i = 0; i < dbCount; i++)
+                {
+                    DBS.Add(Redis.GetDatabase(i));
+                }
+            }
+            else
+            {
+                DBS.Add(Redis.GetDatabase(0));
+            }
         }
 
         /// <summary>
@@ -31,10 +46,11 @@ namespace ProducerApp.AppUtils
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
+        /// <param name="dbNum">需要操作的数据库索引，默认第一个 DB0</param>
         /// <returns></returns>
-        public bool SetStringValue(string key, string value)
+        public bool SetStringValue(string key, string value, int dbNum = 0)
         {
-            return DB.StringSet(key, value);
+            return DBS[dbNum].StringSet(key, value);
         }
 
         /// <summary>
@@ -43,12 +59,13 @@ namespace ProducerApp.AppUtils
         /// <param name="key"></param>
         /// <param name="index"></param>
         /// <param name="value"></param>
+        /// <param name="dbNum">需要操作的数据库索引，默认第一个 DB0</param>
         /// <returns></returns>
-        public bool SetListValue(string key, int index, string value)
+        public bool SetListValue(string key, int index, string value, int dbNum = 0)
         {
             try
             {
-                DB.ListSetByIndex(key, index, value);
+                DBS[dbNum].ListSetByIndex(key, index, value);
                 return true;
             }
             catch (Exception ex)
@@ -63,15 +80,13 @@ namespace ProducerApp.AppUtils
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
+        /// <param name="dbNum">需要操作的数据库索引，默认第一个 DB0</param>
         /// <returns></returns>
-        public bool SetListValue(string key, List<string> value)
+        public bool SetListValue(string key, RedisValue[] values, int dbNum = 0)
         {
             try
             {
-                value.ForEach(item =>
-                {
-                    _ = DB.ListRightPush(key, item);
-                });
+                _ = DBS[dbNum].ListRightPush(key, values);
                 return true;
             }
             catch (Exception ex)
@@ -85,22 +100,24 @@ namespace ProducerApp.AppUtils
         /// 查询 - String
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="dbNum">需要操作的数据库索引，默认第一个 DB0</param>
         /// <returns></returns>
-        public string GetValue(string key)
+        public string GetValue(string key, int dbNum = 0)
         {
-            return DB.StringGet(key);
+            return DBS[dbNum].StringGet(key);
         }
 
         /// <summary>
         /// 查询 - Model 对象
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="dbNum">需要操作的数据库索引，默认第一个 DB0</param>
         /// <returns></returns>
-        public T GetModelByIndex<T>(string key, int index)
+        public T GetModelByIndex<T>(string key, int index, int dbNum = 0)
         {
             try
             {
-                var jsonVal = DB.ListGetByIndex(key, index);
+                var jsonVal = DBS[dbNum].ListGetByIndex(key, index);
                 return JsonConvert.DeserializeObject<T>(jsonVal);
             }
             catch (Exception ex)
@@ -117,12 +134,13 @@ namespace ProducerApp.AppUtils
         /// <param name="key"></param>
         /// <param name="startIndex"></param>
         /// <param name="endIndex"></param>
+        /// <param name="dbNum">需要操作的数据库索引，默认第一个 DB0</param>
         /// <returns></returns>
-        public List<T> GetList<T>(string key, int startIndex, int endIndex)
+        public List<T> GetList<T>(string key, int startIndex, int endIndex, int dbNum = 0)
         {
             try
             {
-                var data = DB.ListRange(key, startIndex, endIndex);
+                var data = DBS[dbNum].ListRange(key, startIndex, endIndex);
                 var result = new List<T>();
                 foreach (RedisValue val in data)
                 {
@@ -145,10 +163,11 @@ namespace ProducerApp.AppUtils
         /// 删除
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="dbNum">需要操作的数据库索引，默认第一个 DB0</param>
         /// <returns></returns>
-        public bool DeleteByKey(string key)
+        public bool DeleteByKey(string key, int dbNum = 0)
         {
-            return DB.KeyDelete(key);
+            return DBS[dbNum].KeyDelete(key);
         }
     }
 }

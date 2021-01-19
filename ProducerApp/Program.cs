@@ -21,12 +21,7 @@ namespace ProducerApp
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            //“¿¿µ◊¢»Î
-            var services = new ServiceCollection();
-            using ServiceProvider serviceProvider = services.BuildServiceProvider();
-
-            var redisHelper = new RedisHelper();
-
+            var redisHelper = new RedisHelper(dbCount: 10);
             Application.Run(new Producer(redisHelper));
         }
     }
