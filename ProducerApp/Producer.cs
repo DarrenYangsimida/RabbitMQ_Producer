@@ -62,7 +62,7 @@ namespace ProducerApp
                 if (!string.IsNullOrWhiteSpace(msg))
                 {
                     var body = Encoding.UTF8.GetBytes(msg);
-                    _channel.BasicPublish(exchange: "SourceExchange", routingKey: $"{Guid.NewGuid()}.msg", basicProperties: _properties, body: body);
+                    _channel.BasicPublish(exchange: "test-Exchange", routingKey: "test-message.msg", basicProperties: _properties, body: body);
                     MessageBox.Show("消息发送成功");
                     richTextBox1.Text = "";
                 }
@@ -89,14 +89,15 @@ namespace ProducerApp
                 _factory = new ConnectionFactory()
                 {
                     HostName = "localhost",//本地 rabbitmq 服务
-                    UserName = "guest",
-                    Password = "guest"
+                    UserName = "admin",
+                    Password = "admin",
+                    Port = 5672,
                 };
                 _connection = _factory.CreateConnection();
                 _channel = _connection.CreateModel();
-                _channel.ExchangeDeclare(exchange: "SourceExchange", type: ExchangeType.Topic, durable: true, autoDelete: true, arguments: null);
-                _channel.QueueDeclare(queue: "testQueue", durable: true, exclusive: false, autoDelete: true, arguments: null);
-                _channel.QueueBind(queue: "testQueue", exchange: "SourceExchange", routingKey: "*.msg", arguments: null);
+                _channel.ExchangeDeclare(exchange: "test-Exchange", type: ExchangeType.Fanout, durable: true, autoDelete: false, arguments: null);
+                _channel.QueueDeclare(queue: "test-Queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
+                //_channel.QueueBind(queue: "test-Queue", exchange: "test-Exchange", routingKey: "test-message.msg", arguments: null);
                 _properties = _channel.CreateBasicProperties();
                 _properties.DeliveryMode = 2;
 
@@ -129,8 +130,6 @@ namespace ProducerApp
         {
             try
             {
-                _channel.ExchangeDelete("SourceExchange");
-                _channel.QueueDelete("testQueue");
                 _channel.Close();
                 _connection.Close();
                 _connection.Dispose();

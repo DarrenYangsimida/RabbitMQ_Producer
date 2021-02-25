@@ -1,0 +1,21 @@
+﻿--RabbitMQ 安装和配置相关
+/********************************************************************************************************
+1、DEV 环境：
+	因为涉及到开发时需要远程连接到 RabbitMQ 服务器,目前 DEV 环境的 RabbitMQ 相关端口做了如下修改：
+	① Management 端口号改为：9009， url: http://10.201.38.4:9009/#/
+	② TCP Listeners 端口号改为：9005，相应项目中的 appsetting.json 配置项 RabbitMQ:RabbitPort 改为 9005
+	
+2、UAT 或者 PROD 环境如果不需要远程连接时，可不用修改端口号：
+	① Management 端口号默认：15672
+	② TCP Listeners 端口号默认：5672，相应项目中的 appsetting.json 配置项 RabbitMQ:RabbitPort 改为 5672
+	
+3、修改 RabbitMQ Server 对应端口时，3.8 以上版本请修改一下路径的配置文件：
+	C:\Users\**\AppData\Roaming\RabbitMQ\advanced.config
+	参考配置：
+	[
+	{rabbit,[{tcp_listeners,[9005]},{loopback_users,["admin"]}]},
+	{rabbitmq_management,[{listener,[{port,9009}]}]}
+	].
+
+4、RabbitMQ 用户管理：请到 Management 界面进行管理
+*********************************************************************************************************/
