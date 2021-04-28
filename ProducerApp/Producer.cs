@@ -97,7 +97,7 @@ namespace ProducerApp
                 _channel = _connection.CreateModel();
                 _channel.ExchangeDeclare(exchange: "test-Exchange", type: ExchangeType.Fanout, durable: true, autoDelete: false, arguments: null);
                 _channel.QueueDeclare(queue: "test-Queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
-                //_channel.QueueBind(queue: "test-Queue", exchange: "test-Exchange", routingKey: "test-message.msg", arguments: null);
+                _channel.QueueBind(queue: "test-Queue", exchange: "test-Exchange", routingKey: "test-message.msg", arguments: null);
                 _properties = _channel.CreateBasicProperties();
                 _properties.DeliveryMode = 2;
 
