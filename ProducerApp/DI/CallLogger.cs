@@ -7,7 +7,7 @@ namespace ProducerApp.DI
 {
     public class CallLogger : IInterceptor
     {
-        IAsyncInterceptor _asyncInterceptor;
+        readonly IAsyncInterceptor _asyncInterceptor;
 
         public CallLogger(IAsyncInterceptor asyncInterceptor)
         {

@@ -54,7 +54,7 @@ namespace ProducerApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button2_Click(object sender, EventArgs e)
+        private void Button2_Click(object sender, EventArgs e)
         {
             try
             {
@@ -82,15 +82,15 @@ namespace ProducerApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button1_Click(object sender, EventArgs e)
+        private void Button1_Click(object sender, EventArgs e)
         {
             try
             {
                 _factory = new ConnectionFactory()
                 {
-                    HostName = "localhost",//本地 rabbitmq 服务
+                    HostName = "192.168.253.128",//rabbitmq server 地址，默认为本地 "localhost"
                     UserName = "admin",
-                    Password = "admin",
+                    Password = "123",
                     Port = 5672,
                 };
                 _connection = _factory.CreateConnection();
@@ -118,7 +118,7 @@ namespace ProducerApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button3_Click(object sender, EventArgs e)
+        private void Button3_Click(object sender, EventArgs e)
         {
             CloseMQConnection();
         }
@@ -152,7 +152,7 @@ namespace ProducerApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button6_Click(object sender, EventArgs e)
+        private void Button6_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBox1.Text.Trim()) || string.IsNullOrWhiteSpace(textBox2.Text.Trim()))
             {
@@ -160,7 +160,7 @@ namespace ProducerApp
             }
             else
             {
-                listBox2.Items.Add($"{ listBox2.Items.Count + 1}、LoginName: {textBox1.Text.Trim()}, LoginEmail: {textBox2.Text.Trim()}");
+                listBox2.Items.Add($"{listBox2.Items.Count + 1}、LoginName: {textBox1.Text.Trim()}, LoginEmail: {textBox2.Text.Trim()}");
                 textBox1.Text = textBox2.Text = "";
             }
         }
@@ -170,7 +170,7 @@ namespace ProducerApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button5_Click(object sender, EventArgs e)
+        private void Button5_Click(object sender, EventArgs e)
         {
             var str1 = "LoginName:";
             var str2 = ", LoginEmail:";
@@ -207,7 +207,7 @@ namespace ProducerApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button4_Click(object sender, EventArgs e)
+        private void Button4_Click(object sender, EventArgs e)
         {
             LoadRedisData();
         }
@@ -222,19 +222,19 @@ namespace ProducerApp
             var userOid = _redisHelper.GetValue("UserOid");
             if (!string.IsNullOrWhiteSpace(userOid))
             {
-                listBox1.Items.Add($"{ listBox1.Items.Count + 1}、UserOid: {userOid}");
+                listBox1.Items.Add($"{listBox1.Items.Count + 1}、UserOid: {userOid}");
             }
 
             var user = _redisHelper.GetModelByIndex<UserModel>("UserList", new Random().Next());
             if (user != null && !string.IsNullOrWhiteSpace(user.LoginName))
             {
-                listBox1.Items.Add($"{ listBox1.Items.Count + 1}、LoginName: {user.LoginName}, LoginEmail: {user.LoginEmail}");
+                listBox1.Items.Add($"{listBox1.Items.Count + 1}、LoginName: {user.LoginName}, LoginEmail: {user.LoginEmail}");
             }
 
             var userList = _redisHelper.GetList<UserModel>("UserList", 0, int.MaxValue);
             userList.ForEach(item =>
             {
-                listBox1.Items.Add($"{ listBox1.Items.Count + 1}、LoginName: {item.LoginName}, LoginEmail: {item.LoginEmail}");
+                listBox1.Items.Add($"{listBox1.Items.Count + 1}、LoginName: {item.LoginName}, LoginEmail: {item.LoginEmail}");
             });
         }
 
